@@ -177,5 +177,18 @@ int main(void) {
     while (1) {
     	minuten++;
     	delay(1000);
+
+    GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk;//Knop A
+    GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk;//Knop B
+
+    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;//alle bits van de pull up weerstand van knop A op 0 zetten
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPD13_0;//bit 0 van knop A hoog maken
+
+    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;//alle bits van de pull up weerstand van knop B op 0 zetten
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;//bit 0 van knop B hoog maken
+
+
+      }
+
     }
 }
