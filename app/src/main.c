@@ -67,12 +67,13 @@ void seg7(int n){
 
 void SysTick_Handler(void){
 	tick++;
-	switch(mux & 0x3){
+	switch(mux){
 	case 0:
 		clear();
 		GPIOA->ODR &= ~(GPIO_ODR_OD8);
 		GPIOA->ODR &= ~(GPIO_ODR_OD15);		// 00
 		seg7(uren / 10);
+		GPIOA->ODR &= ~(GPIO_ODR_OD6);
 		break;
 
 	case 1:
@@ -86,12 +87,14 @@ void SysTick_Handler(void){
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);		// 10
 			seg7(uren % 10);
 		}
+		GPIOA->ODR |= (GPIO_ODR_OD6);
 		break;
 
 	case 2:		clear();
 		GPIOA->ODR &= ~(GPIO_ODR_OD8);
 		GPIOA->ODR |= (GPIO_ODR_OD15);		// 01
 		seg7((minuten / 10) % 10);
+		GPIOA->ODR &= ~(GPIO_ODR_OD6);
 		break;
 
 	case 3:
@@ -107,9 +110,14 @@ void SysTick_Handler(void){
 			GPIOA->ODR |= (GPIO_ODR_OD15);		// 11
 			seg7(minuten % 10);
 		}
+		GPIOA->ODR &= ~(GPIO_ODR_OD6);
 		break;
 	}
 	mux++;
+
+	if (mux>3){
+		mux = 0;
+	}
 }
 
 int main(void) {
