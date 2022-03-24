@@ -13,14 +13,14 @@ void delay(unsigned int n) {
 	}
 }
 
-void clear() {
+void clear() {//alle segmenten laag zetten
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
 	GPIOB->ODR &= ~(GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
 }
 
 void seg7(int n) {
 	switch (n) {
-		case 0:
+		case 0: //getal van elke case is het getal dat getoond wordt
 			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
 			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1);
 			break;
@@ -64,36 +64,36 @@ void seg7(int n) {
 
 void SysTick_Handler(void) {
 	switch (mux) {
-		case 0:
+		case 0://00
 			clear();
-			GPIOA->ODR &= ~(GPIO_ODR_OD8);
-			GPIOA->ODR &= ~(GPIO_ODR_OD15);		// 00
+			GPIOA->ODR &= ~(GPIO_ODR_OD8); //Disp 1 laag zetten
+			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
 			seg7(uren / 10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);
+			GPIOA->ODR &= ~(GPIO_ODR_OD6); //Seg DP laag zetten
 			break;
 
-		case 1:
+		case 1:// 10
 			clear();
-			GPIOA->ODR |= (GPIO_ODR_OD8);
-			GPIOA->ODR &= ~(GPIO_ODR_OD15);	// 10
+			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
+			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
 			seg7(uren % 10);
-			GPIOA->ODR |= (GPIO_ODR_OD6);
+			GPIOA->ODR |= (GPIO_ODR_OD6);  //Seg DP hoog zetten
 			break;
 
-		case 2:
+		case 2:// 01
 			clear();
-			GPIOA->ODR &= ~(GPIO_ODR_OD8);
-			GPIOA->ODR |= (GPIO_ODR_OD15);		// 01
+			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
+			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
 			seg7(minuten / 10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);
+			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
 			break;
 
-		case 3:
+		case 3:// 11
 			clear();
-			GPIOA->ODR |= (GPIO_ODR_OD8);
-			GPIOA->ODR |= (GPIO_ODR_OD15);		// 11
+			GPIOA->ODR |= (GPIO_ODR_OD8); //Disp 1 hoog zetten
+			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
 			seg7(minuten % 10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);
+			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
 			break;
 	}
 	mux++;
@@ -110,7 +110,7 @@ void SysTick_Handler(void) {
 			}
 		}
 	}
-	if (mux > 3) {
+	else if (mux > 3) {
 		mux = 0;
 	}
 }
@@ -121,60 +121,58 @@ int main(void) {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
 	//Knoppen A en B
-	GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk; // Knop A (pin 13 van GPIOB) wordt laag gezet
-	GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk; // Knop B (pin 14 van GPIOB) wordt laag gezet
+	GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk; // Knop A laag zetten
+	GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk; // Knop B laag zetten
 
-	//Pin 13(
-	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;//pull up weerstand wordt hoog gezet voor pin 13
+	//Knop A
+	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;//pull up weerstand van Knop A wordt hoog gezet
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD13_0;
 
-	//Pin 14(
-	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;//pull up weerstand wordt hoog gezet voor pin 14
+	//Knop B
+	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;//pull up weerstand van Knop B wordt hoog gezet
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
 
-
 	//7seg LED's
-	GPIOB->MODER &= ~GPIO_MODER_MODE15_Msk;
-	GPIOB->MODER |= GPIO_MODER_MODE15_0;
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT15;
-
-	GPIOB->MODER &= ~GPIO_MODER_MODE12_Msk;
-	GPIOB->MODER |= GPIO_MODER_MODE12_0;
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT12;
-
-	GPIOA->MODER &= ~GPIO_MODER_MODE7_Msk;
-	GPIOA->MODER |= GPIO_MODER_MODE7_0;
-	GPIOA->OTYPER &= ~GPIO_OTYPER_OT7;
-
-	GPIOA->MODER &= ~GPIO_MODER_MODE5_Msk;
-	GPIOA->MODER |= GPIO_MODER_MODE5_0;
-	GPIOA->OTYPER &= ~GPIO_OTYPER_OT5;
-
-	GPIOB->MODER &= ~GPIO_MODER_MODE2_Msk;
-	GPIOB->MODER |= GPIO_MODER_MODE2_0;
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT2;
-
-	GPIOB->MODER &= ~GPIO_MODER_MODE1_Msk;
-	GPIOB->MODER |= GPIO_MODER_MODE1_0;
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT1;
-
-	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
+	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk; //Seg A
 	GPIOB->MODER |= GPIO_MODER_MODE0_0;
 	GPIOB->OTYPER &= ~GPIO_OTYPER_OT0;
 
+	GPIOA->MODER &= ~GPIO_MODER_MODE7_Msk; //Seg B
+	GPIOA->MODER |= GPIO_MODER_MODE7_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT7;
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE5_Msk; //Seg C
+	GPIOA->MODER |= GPIO_MODER_MODE5_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT5;
+
+	GPIOB->MODER &= ~GPIO_MODER_MODE12_Msk; //Seg D
+	GPIOB->MODER |= GPIO_MODER_MODE12_0;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT12;
+
+	GPIOB->MODER &= ~GPIO_MODER_MODE15_Msk; //Seg E
+	GPIOB->MODER |= GPIO_MODER_MODE15_0;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT15;
+
+	GPIOB->MODER &= ~GPIO_MODER_MODE1_Msk; //Seg F
+	GPIOB->MODER |= GPIO_MODER_MODE1_0;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT1;
+
+	GPIOB->MODER &= ~GPIO_MODER_MODE2_Msk; //Seg G
+	GPIOB->MODER |= GPIO_MODER_MODE2_0;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT2;
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE6_Msk; //Seg DP
+	GPIOA->MODER |= GPIO_MODER_MODE6_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT6;
+
 	//mux
-
-	GPIOA->MODER &= ~GPIO_MODER_MODE15_Msk;
-	GPIOA->MODER |= GPIO_MODER_MODE15_0;
-	GPIOA->OTYPER &= ~GPIO_OTYPER_OT15;
-
-	GPIOA->MODER &= ~GPIO_MODER_MODE8_Msk;
+	GPIOA->MODER &= ~GPIO_MODER_MODE8_Msk; //Disp 0
 	GPIOA->MODER |= GPIO_MODER_MODE8_0;
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT8;
 
-	GPIOA->MODER &= ~GPIO_MODER_MODE6_Msk;
-	GPIOA->MODER |= GPIO_MODER_MODE6_0;
-	GPIOA->OTYPER &= ~GPIO_OTYPER_OT6;
+	GPIOA->MODER &= ~GPIO_MODER_MODE15_Msk; //Disp 1
+	GPIOA->MODER |= GPIO_MODER_MODE15_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT15;
 
 	// CPU Frequentie = 48 MHz
 	// Systick interrupt elke 1 ms (1kHz)  --> 48000000 Hz / 1000 Hz --> Reload = 48000
@@ -202,7 +200,6 @@ int main(void) {
 			}
 
 			delay(1000000);
-
 		}
 
 	}
