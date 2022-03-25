@@ -14,4 +14,6 @@ int main(void) {
 }
 
 
-GPIOB->MODER
+GPIOA->MODER |= GPIO_MODER_MODE0_Msk;
+GPIOA->MODER |= GPIO_MODER_MODE0_0;
+
