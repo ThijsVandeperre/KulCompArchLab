@@ -121,8 +121,8 @@ int main(void) {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
 	//Knoppen A en B
-	GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk; // Knop A laag zetten
-	GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk; // Knop B laag zetten
+	GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk; // Knop A configureren naar input
+	GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk; // Knop B configureren naar input
 
 	//Knop A
 	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;//pull up weerstand van Knop A wordt hoog gezet
