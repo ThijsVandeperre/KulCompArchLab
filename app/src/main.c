@@ -68,7 +68,7 @@ void SysTick_Handler(void) {
 			clear();
 			GPIOA->ODR &= ~(GPIO_ODR_OD8); //Disp 1 laag zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7(uren / 10);
+			seg7(temperatuur / 1000);
 			GPIOA->ODR &= ~(GPIO_ODR_OD6); //Seg DP laag zetten
 			break;
 
@@ -76,7 +76,7 @@ void SysTick_Handler(void) {
 			clear();
 			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7(uren % 10);
+			seg7((temperatuur / 100)%10);
 			GPIOA->ODR |= (GPIO_ODR_OD6);  //Seg DP hoog zetten
 			break;
 
@@ -84,7 +84,7 @@ void SysTick_Handler(void) {
 			clear();
 			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7(minuten / 10);
+			seg7((temperatuur % 100)/10);
 			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
 			break;
 
@@ -92,7 +92,7 @@ void SysTick_Handler(void) {
 			clear();
 			GPIOA->ODR |= (GPIO_ODR_OD8); //Disp 1 hoog zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7(minuten % 10);
+			seg7((temperatuur % 100)%10);
 			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
 			break;
 	}
@@ -142,8 +142,9 @@ int main(void) {
 	ADC1->CR |= ADC_CR_ADEN;
 
 	//Kanalen instellen
-	ADC1->SMPR1=
-	ADC1->SQR1=
+
+	ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2
+	ADC1->SQR1 =  ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2
 
 	//NTC
 	GPIOA->MODER |= GPIO_MODER_MODE0_Msk; //NTC configureren naar Analog
