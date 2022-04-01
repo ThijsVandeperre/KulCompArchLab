@@ -1,10 +1,8 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
-int ms = 0;
 int mux = 0;
-int uren = 0;
-int minuten = 0;
+int temperatuur = 0;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -97,42 +95,36 @@ void SysTick_Handler(void) {
 			break;
 	}
 	mux++;
-	ms++;
 
-	if (ms == 60000) {
-		ms = 0;
-		minuten++;
-		if (minuten >= 60) {
-			minuten = 0;
-			uren++;
-			if (uren >= 24) {
-				uren = 0;
-			}
-		}
-	}
-	else if (mux > 3) {
+	if (mux > 3) {
 		mux = 0;
 	}
 }
 
 int main(void) {
+
+	//NTC
+	GPIOA->MODER &= ~GPIO_MODER_MODE0_Msk; //NTC configureren naar Analog
+	GPIOA->MODER |= GPIO_MODER_MODE0_0;
+	GPIOA->MODER |= GPIO_MODER_MODE0_1;
+
 	//Activeren klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-	RCC->AHB2ENR |= RCC_AHBENR_ADCEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
 
 	//Klok selecteren, hier gebruiken we syslck
-	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL_msk;
+	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL_Msk;
 	RCC->CCIPR |= RCC_CCIPR_ADCSEL_0 | RCC_CCIPR_ADCSEL_1;
 
 	//Deep powerdown modus uitzetten
-	ADC1->CR &= ÃDC_CR_DEEPPWD;
+	ADC1->CR &= ~ADC_CR_DEEPPWD;
 
 	//ADC voltage regulator aanzetten
 	ADC1->CR |= ADC_CR_ADVREGEN;
 
 	//Delay a few milliseconds, see datasheet for exact timing
-	delay_ms(0,02);
+	delay(1500);
 
 	//Kalibratie starten
 	ADC1->CR | ADC_CR_ADCAL;
@@ -143,24 +135,8 @@ int main(void) {
 
 	//Kanalen instellen
 
-	ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2
-	ADC1->SQR1 =  ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2
-
-	//NTC
-	GPIOA->MODER |= GPIO_MODER_MODE0_Msk; //NTC configureren naar Analog
-	GPIOA->MODER |= GPIO_MODER_MODE0_0;
-
-	//Knoppen A en B
-	GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk; // Knop A configureren naar input
-	GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk; // Knop B configureren naar input
-
-	//Knop A
-	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;//pull up weerstand van Knop A wordt hoog gezet
-	GPIOB->PUPDR |= GPIO_PUPDR_PUPD13_0;
-
-	//Knop B
-	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;//pull up weerstand van Knop B wordt hoog gezet
-	GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
+	ADX1->SMPR1 = ADC_SMPR1_SMP0_0 | ADC_SMPR1_SMP0_1 | ADC_SMPR1_SMP0_2
+	ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2
 
 	//7seg LED's
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk; //Seg A
@@ -212,29 +188,12 @@ int main(void) {
 	NVIC_SetPriority(SysTick_IRQn, 128);
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	while (1) {
+	while(1){
+		// Start de ADC en wacht tot de sequentie klaar is
+		ADC1->CR |= ADC_CR_ADSTART;
+		while(!(ADC1->ISR & ADC_ISR_EOS));
 
-		if (!(GPIOB->IDR & GPIO_IDR_ID14)) {
-			uren++;
-			if (uren >= 24) {
-				uren = 0;
-			}
-			delay(1000000);
-		}
-
-		else if (!(GPIOB->IDR & GPIO_IDR_ID13)) {
-
-			minuten++;
-			if (minuten >= 60) {
-				minuten = 0;
-			}
-
-			delay(1000000);
-		}
-
+		// Lees de waarde in
+		temperatuur = ADC1->DR;
 	}
-
 }
-
-
-
