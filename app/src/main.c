@@ -4,6 +4,7 @@
 int mux = 0;
 int temperatuur = 0;
 
+
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
 	while (delay--) {
@@ -195,5 +196,10 @@ int main(void) {
 
 		// Lees de waarde in
 		temperatuur = ADC1->DR;
+		float input = ADC1->DR;
+		float voltage = (input3.0f)/4096.0f;
+		float weerstand = (10000.0fvoltage)/(3.0f-voltage);
+		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
+
 	}
 }
