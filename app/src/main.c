@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
-int ms = 0;
+int mseconden = 0;
 int mux = 0;
 int uren = 0;
 int minuten = 0;
@@ -97,10 +97,10 @@ void SysTick_Handler(void) {
 			break;
 	}
 	mux++;
-	ms++;
+	mseconden++;
 
-	if (ms == 60000) {
-		ms = 0;
+	if (mseconden == 60000) {
+		mseconden = 0;
 		minuten++;
 		if (minuten >= 60) {
 			minuten = 0;
@@ -132,7 +132,7 @@ int main(void) {
 	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;//pull up weerstand van Knop B wordt hoog gezet
 	GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
 
-	//7seg LED's
+	//7seg LED's configureren naar output
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk; //Seg A
 	GPIOB->MODER |= GPIO_MODER_MODE0_0;
 	GPIOB->OTYPER &= ~GPIO_OTYPER_OT0;
