@@ -192,6 +192,26 @@ int main(void) {
 	NVIC_SetPriority(SysTick_IRQn, 128);
 	NVIC_EnableIRQ(SysTick_IRQn);
 
+	// TIMER
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+
+	GPIOB->MODER &= ~GPIO_MODER_MODE8_Msk;
+	GPIOB->MODER |=  GPIO_MODER_MODE8_1;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT8;
+	GPIOB->AFR[1] = (GPIOB->AFR[1] & (~GPIO_AFRH_AFSEL8_Msk)) | (0xE << GPIO_AFRH_AFSEL8_Pos);
+
+	TIM16->PSC = 0;
+	TIM16->ARR = 24000;
+	TIM16->CCR1 = 12000;
+
+	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
+	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
+	TIM16->CCER |= TIM_CCER_CC1E;
+	TIM16->CCER &= ~TIM_CCER_CC1P;
+	TIM16->BDTR |= TIM_BDTR_MOE;
+	TIM16->CR1 |= TIM_CR1_CEN;
+
 	while(1){
 		// Start de ADC en wacht tot de sequentie klaar is
 		ADC1->CR |= ADC_CR_ADSTART;
@@ -202,6 +222,11 @@ int main(void) {
 		voltage = (input*3.0f)/4096.0f;
 		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
+
+		if (temperatuur > 28) {
+
+
+		}
 
 	}
 }
