@@ -205,12 +205,8 @@ int main(void) {
 	TIM16->ARR = 24000;
 	TIM16->CCR1 = 12000;
 
-	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
-	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
-	TIM16->CCER |= TIM_CCER_CC1E;
-	TIM16->CCER &= ~TIM_CCER_CC1P;
-	TIM16->BDTR |= TIM_BDTR_MOE;
-	TIM16->CR1 |= TIM_CR1_CEN;
+
+
 
 	while(1){
 		// Start de ADC en wacht tot de sequentie klaar is
@@ -223,9 +219,19 @@ int main(void) {
 		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
 
-		if (temperatuur > 28) {
+		TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
+		TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
+		TIM16->CCER |= TIM_CCER_CC1E;
+		TIM16->CCER &= ~TIM_CCER_CC1P;
+		TIM16->BDTR |= TIM_BDTR_MOE;
+		TIM16->CR1 |= TIM_CR1_CEN;
 
+		if (temperatuur > 300) {
+			TIM16->BDTR |= TIM_BDTR_MOE;
 
+		}
+		else {
+			TIM16->BDTR &= ~TIM_BDTR_MOE;
 		}
 
 	}
