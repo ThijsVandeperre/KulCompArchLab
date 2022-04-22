@@ -3,6 +3,9 @@
 
 int mux = 0;
 int temperatuur = 0;
+int input;
+float voltage;
+float weerstand;
 
 
 void delay(unsigned int n) {
@@ -76,7 +79,7 @@ void SysTick_Handler(void) {
 			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
 			seg7((temperatuur / 100)%10);
-			GPIOA->ODR |= (GPIO_ODR_OD6);  //Seg DP hoog zetten
+			GPIOA->ODR &= ~(GPIO_ODR_OD6);  //Seg DP laag zetten
 			break;
 
 		case 2:// 01
@@ -84,7 +87,7 @@ void SysTick_Handler(void) {
 			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
 			seg7((temperatuur % 100)/10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
+			GPIOA->ODR |= (GPIO_ODR_OD6);//Seg DP hoog zetten
 			break;
 
 		case 3:// 11
@@ -136,7 +139,7 @@ int main(void) {
 
 	//Kanalen instellen
 
-	ADC1->SMPR1 = ADC_SMPR1_SMP0_0 | ADC_SMPR1_SMP0_1 | ADC_SMPR1_SMP0_2;
+	ADC1->SMPR1 = ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2;
 	ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2;
 
 	//7seg LED's
@@ -195,10 +198,9 @@ int main(void) {
 		while(!(ADC1->ISR & ADC_ISR_EOS));
 
 		// Lees de waarde in
-		temperatuur = ADC1->DR;
-		float input = ADC1->DR;
-		float voltage = (input*3.0f)/4096.0f;
-		float weerstand = (10000.0f*voltage)/(3.0f-voltage);
+		input = ADC1->DR;
+		voltage = (input*3.0f)/4096.0f;
+		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
 
 	}
