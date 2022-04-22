@@ -3,7 +3,8 @@
 
 int mux = 0;
 int temperatuur = 0;
-int input;
+int input_NTC;
+int input_potmeter;
 float voltage;
 float weerstand;
 
@@ -112,6 +113,11 @@ int main(void) {
 	GPIOA->MODER |= GPIO_MODER_MODE0_0;
 	GPIOA->MODER |= GPIO_MODER_MODE0_1;
 
+	//Potmeter
+	GPIOA->MODER &= ~GPIO_MODER_MODE1_Msk; //NTC configureren naar Analog
+	GPIOA->MODER |= GPIO_MODER_MODE1_0;
+	GPIOA->MODER |= GPIO_MODER_MODE1_1;
+
 	//Activeren klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
@@ -136,11 +142,6 @@ int main(void) {
 
 	//ADC aanzetten
 	ADC1->CR |= ADC_CR_ADEN;
-
-	//Kanalen instellen
-
-	ADC1->SMPR1 = ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2;
-	ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2;
 
 	//7seg LED's
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk; //Seg A
@@ -210,11 +211,16 @@ int main(void) {
 
 	while(1){
 		// Start de ADC en wacht tot de sequentie klaar is
+
+		// Kanalen instellen
+		ADC1->SMPR1 = ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2;
+		ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2;
 		ADC1->CR |= ADC_CR_ADSTART;
-		while(!(ADC1->ISR & ADC_ISR_EOS));
+		while(!(ADC1->ISR & ADC_ISR_EOC));
 
 		// Lees de waarde in
-		input = ADC1->DR;
+		input_NTC = ADC1->DR;
+		input_potmeter = ADC1->DR;
 		voltage = (input*3.0f)/4096.0f;
 		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
@@ -225,6 +231,12 @@ int main(void) {
 		TIM16->CCER &= ~TIM_CCER_CC1P;
 		TIM16->BDTR |= TIM_BDTR_MOE;
 		TIM16->CR1 |= TIM_CR1_CEN;
+
+		// Kanalen instellen
+		ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2;
+		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
+		ADC1->CR |= ADC_CR_ADSTART;
+		while(!(ADC1->ISR & ADC_ISR_EOC));
 
 		if (temperatuur > 300) {
 			TIM16->BDTR |= TIM_BDTR_MOE;
