@@ -7,6 +7,7 @@ int input_NTC;
 int input_potmeter;
 float voltage;
 float weerstand;
+int value_POT;
 
 
 void delay(unsigned int n) {
@@ -221,7 +222,7 @@ int main(void) {
 		// Lees de waarde in
 		input_NTC = ADC1->DR;
 		input_potmeter = ADC1->DR;
-		voltage = (input*3.0f)/4096.0f;
+		voltage = (input_NTC*3.0f)/4096.0f;
 		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
 
@@ -237,8 +238,7 @@ int main(void) {
 		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
 		ADC1->CR |= ADC_CR_ADSTART;
 		while(!(ADC1->ISR & ADC_ISR_EOC));
-
-		if (temperatuur > 300) {
+		if (input_NTC > input_potmeter ) {
 			TIM16->BDTR |= TIM_BDTR_MOE;
 
 		}
