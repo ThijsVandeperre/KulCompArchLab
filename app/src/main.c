@@ -7,7 +7,6 @@ int input_NTC;
 int input_potmeter;
 float voltage;
 float weerstand;
-int value_POT;
 
 
 void delay(unsigned int n) {
