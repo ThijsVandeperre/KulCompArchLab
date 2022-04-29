@@ -213,36 +213,38 @@ int main(void) {
 		// Start de ADC en wacht tot de sequentie klaar is
 
 		// Kanalen instellen
+		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2);
 		ADC1->SMPR1 = ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2;
 		ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2;
 		ADC1->CR |= ADC_CR_ADSTART;
+		input_potmeter = ADC1->DR;
 		while(!(ADC1->ISR & ADC_ISR_EOC));
 
 		// Lees de waarde in
 		input_NTC = ADC1->DR;
-		input_potmeter = ADC1->DR;
 		voltage = (input_NTC*3.0f)/4096.0f;
 		weerstand = (10000.0f*voltage)/(3.0f-voltage);
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
+
+		// Kanalen instellen
+		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2);
+		ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2;
+		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
+		ADC1->CR |= ADC_CR_ADSTART;
+		while(!(ADC1->ISR & ADC_ISR_EOC));
 
 		TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
 		TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
 		TIM16->CCER |= TIM_CCER_CC1E;
 		TIM16->CCER &= ~TIM_CCER_CC1P;
-		TIM16->BDTR |= TIM_BDTR_MOE;
-		TIM16->CR1 |= TIM_CR1_CEN;
 
-		// Kanalen instellen
-		ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2;
-		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
-		ADC1->CR |= ADC_CR_ADSTART;
-		while(!(ADC1->ISR & ADC_ISR_EOC));
-		if (input_NTC > input_potmeter ) {
+		if (input_potmeter > input_NTC ) {
 			TIM16->BDTR |= TIM_BDTR_MOE;
-
+			TIM16->CR1 |= TIM_CR1_CEN;
 		}
 		else {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
+			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
 
 	}
