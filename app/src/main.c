@@ -227,7 +227,7 @@ int main(void) {
 		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
 
 		// Kanalen instellen
-		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2);
+		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2);//reset
 		ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2;
 		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
 		ADC1->CR |= ADC_CR_ADSTART;
@@ -237,10 +237,11 @@ int main(void) {
 		TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
 		TIM16->CCER |= TIM_CCER_CC1E;
 		TIM16->CCER &= ~TIM_CCER_CC1P;
+		TIM16->CR1 |= TIM_CR1_CEN;
 
 		if (input_potmeter > input_NTC ) {
 			TIM16->BDTR |= TIM_BDTR_MOE;
-			TIM16->CR1 |= TIM_CR1_CEN;
+
 		}
 		else {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
