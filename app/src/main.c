@@ -9,6 +9,7 @@ float voltage;
 float weerstand;
 int i=0;
 float t;
+int j=0;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -284,5 +285,6 @@ int main(void) {
 		}
 		t=temperatuur;
 		printf("%.1f\n\r",t/10);
+
 	}
 }
