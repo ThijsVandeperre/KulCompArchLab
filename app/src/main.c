@@ -277,5 +277,9 @@ int main(void) {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
+		int __io_putchar(int temperatuur){
+		    while(!(USART1->ISR & USART_ISR_TXE));
+		    USART1->TDR = temperatuur;
+		}
 	}
 }
