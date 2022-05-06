@@ -187,6 +187,22 @@ int main(void) {
 	GPIOA->MODER |= GPIO_MODER_MODE15_0;
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT15;
 
+	//GPIO configureren en alternative mode aanzetten
+	GPIOA->MODER &= ~GPIO_MODER_MODE9_Msk;
+	GPIOA->MODER |=  GPIO_MODER_MODE9_1;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT9;
+	GPIOA->AFR[1] = (GPIOA->AFR[1] & (~GPIO_AFRH_AFSEL9_Msk)) | (0x7 << GPIO_AFRH_AFSEL9_Pos);
+
+	GPIOA->MODER &= ~GPIO_MODER_MODE10_Msk;
+	GPIOA->AFR[1] = (GPIOA->AFR[1] & (~GPIO_AFRH_AFSEL10_Msk)) | (0x7 << GPIO_AFRH_AFSEL10_Pos);
+
+	// UART configureren
+	USART1->CR1 = 0;
+	USART1->CR2 = 0;
+	USART1->CR3 = 0;
+	USART1->BRR = 417;
+	USART1->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+
 	// CPU Frequentie = 48 MHz
 	// Systick interrupt elke 1 ms (1kHz)  --> 48000000 Hz / 1000 Hz --> Reload = 48000
 	SysTick_Config(48000);
