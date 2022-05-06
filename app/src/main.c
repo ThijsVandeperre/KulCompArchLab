@@ -8,7 +8,7 @@ int input_potmeter;
 float voltage;
 float weerstand;
 int i=0;
-
+float t;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -106,6 +106,11 @@ void SysTick_Handler(void) {
 		mux = 0;
 	}
 }
+
+int __io_putchar(int temperatuur){
+		    while(!(USART1->ISR & USART_ISR_TXE));
+		    USART1->TDR = temperatuur;
+		}
 
 int main(void) {
 
@@ -260,12 +265,12 @@ int main(void) {
 			if (i<1000) {
 				TIM16->ARR = 24000;
 				TIM16->CCR1 = 12000;
-				delay(5000);
+				delay(10);
 			}
 			else if (i<2000) {
 				TIM16->ARR = 12000;
 				TIM16->CCR1 = 6000;
-				delay(5000);
+				delay(10);
 			}
 			else {
 				i=0;
@@ -277,9 +282,7 @@ int main(void) {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
-		int __io_putchar(int temperatuur){
-		    while(!(USART1->ISR & USART_ISR_TXE));
-		    USART1->TDR = temperatuur;
-		}
+		t=temperatuur;
+		printf("%f\n\r",t/10);
 	}
 }
