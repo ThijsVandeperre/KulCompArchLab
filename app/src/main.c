@@ -243,12 +243,12 @@ int main(void) {
 			if (i<1000) {
 				TIM16->ARR = 24000;
 				TIM16->CCR1 = 12000;
-				delay(1000);
+				delay(5000);
 			}
 			else if (i<2000) {
 				TIM16->ARR = 12000;
 				TIM16->CCR1 = 6000;
-				delay(1000);
+				delay(5000);
 			}
 			else {
 				i=0;
