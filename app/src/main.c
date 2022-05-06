@@ -9,7 +9,7 @@ float voltage;
 float weerstand;
 int i=0;
 float t;
-int j=0;
+int mseconden=0;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -103,6 +103,11 @@ void SysTick_Handler(void) {
 	}
 	mux++;
 
+	if (mseconden == 1000) {
+		mseconden = 0;
+		t=temperatuur;
+		printf("%.1f\n\r",t/10);
+	}
 	if (mux > 3) {
 		mux = 0;
 	}
@@ -283,8 +288,7 @@ int main(void) {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
-		t=temperatuur;
-		printf("%.1f\n\r",t/10);
+
 
 	}
 }
