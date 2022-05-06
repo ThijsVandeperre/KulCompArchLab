@@ -7,6 +7,7 @@ int input_NTC;
 int input_potmeter;
 float voltage;
 float weerstand;
+int i=0;
 
 
 void delay(unsigned int n) {
@@ -203,8 +204,6 @@ int main(void) {
 	GPIOB->AFR[1] = (GPIOB->AFR[1] & (~GPIO_AFRH_AFSEL8_Msk)) | (0xE << GPIO_AFRH_AFSEL8_Pos);
 
 	TIM16->PSC = 0;
-	TIM16->ARR = 24000;
-	TIM16->CCR1 = 12000;
 
 
 
@@ -241,12 +240,25 @@ int main(void) {
 
 		if (input_potmeter > input_NTC ) {
 			TIM16->BDTR |= TIM_BDTR_MOE;
-
+			if (i<1000) {
+				TIM16->ARR = 24000;
+				TIM16->CCR1 = 12000;
+				delay(1000);
+			}
+			else if (i<2000) {
+				TIM16->ARR = 12000;
+				TIM16->CCR1 = 6000;
+				delay(1000);
+			}
+			else {
+				i=0;
+				delay(10);
+			}
+			i++;
 		}
 		else {
 			TIM16->BDTR &= ~TIM_BDTR_MOE;
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
-
 	}
 }
