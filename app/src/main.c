@@ -283,6 +283,6 @@ int main(void) {
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
 		t=temperatuur;
-		printf("%f\n\r",t/10);
+		printf("%.1f\n\r",t/10);
 	}
 }
