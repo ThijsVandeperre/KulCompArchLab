@@ -123,6 +123,7 @@ int main(void) {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
 	//Klok selecteren, hier gebruiken we syslck
 	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL_Msk;
