@@ -216,7 +216,6 @@ int main(void) {
 	NVIC_EnableIRQ(SysTick_IRQn);
 
 	// TIMER
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
 	GPIOB->MODER &= ~GPIO_MODER_MODE8_Msk;
@@ -226,8 +225,24 @@ int main(void) {
 
 	TIM16->PSC = 0;
 
+	// I2C
+	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
 
+	// De GPIO correct configureren voor de alternative mode
+	GPIOB->MODER &= ~GPIO_MODER_MODE6_Msk;
+	GPIOB->MODER |=  GPIO_MODER_MODE6_1;
+	GPIOB->OTYPER |= GPIO_OTYPER_OT6;
+	GPIOB->AFR[0] = (GPIOB->AFR[0] & (~GPIO_AFRL_AFSEL6_Msk)) | (0x4 << GPIO_AFRL_AFSEL6_Pos);
 
+	GPIOB->MODER &= ~GPIO_MODER_MODE7_Msk;
+	GPIOB->MODER |=  GPIO_MODER_MODE7_1;
+	GPIOB->OTYPER |= GPIO_OTYPER_OT7;
+	GPIOB->AFR[0] = (GPIOB->AFR[0] & (~GPIO_AFRL_AFSEL7_Msk)) | (0x4 << GPIO_AFRL_AFSEL7_Pos);
+
+	// De I2C module instellen voor 100kHz klok en deze dan ook aanzetten.
+	I2C1->TIMINGR = 0x20303E5D;
+	I2C1->CR2 |= (I2C_CR2_AUTOEND | I2C_CR2_NACK);
+	I2C1->CR1 |= I2C_CR1_PE;
 
 	while(1){
 		// Start de ADC en wacht tot de sequentie klaar is
