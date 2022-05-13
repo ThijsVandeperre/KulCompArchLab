@@ -102,15 +102,8 @@ void SysTick_Handler(void) {
 			break;
 	}
 	mux++;
+	mseconden++;
 
-	if (mseconden == 1000) {
-		mseconden = 0;
-		t=temperatuur;
-		printf("%.1f\n\r",t/10);
-	}
-	if (mux > 3) {
-		mux = 0;
-	}
 }
 
 int __io_putchar(int temperatuur){
@@ -289,6 +282,13 @@ int main(void) {
 			TIM16->CR1 &= ~TIM_CR1_CEN;
 		}
 
-
+		if (mseconden > 1000) {
+			mseconden = 0;
+			t=temperatuur;
+			printf("%.1f°C\n\r",t/10);
+		}
+		if (mux > 3) {
+			mux = 0;
+		}
 	}
 }
