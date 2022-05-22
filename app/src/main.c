@@ -69,7 +69,6 @@ void SysTick_Handler(void) {
 			GPIOA->ODR &= ~(GPIO_ODR_OD8); //Disp 1 laag zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
 			seg7(alpha / 1000);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6); //Seg DP laag zetten
 			break;
 
 		case 1:// 10
@@ -77,7 +76,6 @@ void SysTick_Handler(void) {
 			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
 			seg7((alpha / 100)%10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);  //Seg DP laag zetten
 			break;
 
 		case 2:// 01
@@ -85,7 +83,6 @@ void SysTick_Handler(void) {
 			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
 			seg7((alpha % 100)/10);
-			GPIOA->ODR |= (GPIO_ODR_OD6);//Seg DP hoog zetten
 			break;
 
 		case 3:// 11
@@ -93,7 +90,6 @@ void SysTick_Handler(void) {
 			GPIOA->ODR |= (GPIO_ODR_OD8); //Disp 1 hoog zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
 			seg7((alpha % 100)%10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
 			break;
 	}
 	mux++;
