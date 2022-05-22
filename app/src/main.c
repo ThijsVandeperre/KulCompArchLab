@@ -96,9 +96,9 @@ void SysTick_Handler(void) {
 
 }
 
-int __io_putchar(int temperatuur){
+int __io_putchar(int alpha){
 		    while(!(USART1->ISR & USART_ISR_TXE));
-		    USART1->TDR = temperatuur;
+		    USART1->TDR = alpha;
 		}
 void accelerometer_write(int data, int reg){
 	I2C1->CR2 &= ~(1 << 10);
