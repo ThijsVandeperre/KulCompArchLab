@@ -4,7 +4,8 @@
 
 
 int mux = 0;
-int alpha = 0;
+double alpha = 0;
+int beta = 0;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -63,33 +64,34 @@ void seg7(int n) {
 }
 
 void SysTick_Handler(void) {
+	beta = alpha;
 	switch (mux) {
 		case 0://00
 			clear();
 			GPIOA->ODR &= ~(GPIO_ODR_OD8); //Disp 1 laag zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7(alpha / 1000);
+			seg7(beta / 1000);
 			break;
 
 		case 1:// 10
 			clear();
 			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
 			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7((alpha / 100)%10);
+			seg7((beta / 100)%10);
 			break;
 
 		case 2:// 01
 			clear();
 			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7((alpha % 100)/10);
+			seg7((beta % 100)/10);
 			break;
 
 		case 3:// 11
 			clear();
 			GPIOA->ODR |= (GPIO_ODR_OD8); //Disp 1 hoog zetten
 			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7((alpha % 100)%10);
+			seg7((beta % 100)%10);
 			break;
 	}
 	mux++;
