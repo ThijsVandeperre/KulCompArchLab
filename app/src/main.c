@@ -94,6 +94,10 @@ void SysTick_Handler(void) {
 	}
 	mux++;
 
+	if (mux > 3) {
+				mux = 0;
+			}
+
 }
 
 int __io_putchar(int ch){
@@ -287,8 +291,5 @@ int main(void) {
 		printf("%2.2f",alpha);
 		printf("\n\r");
 
-		if (mux > 3) {
-			mux = 0;
-		}
 	}
 }
