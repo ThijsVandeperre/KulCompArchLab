@@ -1,8 +1,9 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
+#include <math.h>
+
 
 int mux = 0;
-int mseconden = 0;
 float alpha = 0;
 
 void delay(unsigned int n) {
@@ -63,8 +64,6 @@ void seg7(int n) {
 
 void SysTick_Handler(void) {
 	mux++;
-	mseconden++;
-
 }
 
 int __io_putchar(int temperatuur){
