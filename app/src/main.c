@@ -2,14 +2,8 @@
 #include <stm32l4xx.h>
 
 int mux = 0;
-int temperatuur = 0;
-int input_NTC;
-int input_potmeter;
-float voltage;
-float weerstand;
-int i=0;
-float t;
-int mseconden=0;
+int mseconden = 0;
+float alpha = 0;
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -68,39 +62,6 @@ void seg7(int n) {
 }
 
 void SysTick_Handler(void) {
-	switch (mux) {
-		case 0://00
-			clear();
-			GPIOA->ODR &= ~(GPIO_ODR_OD8); //Disp 1 laag zetten
-			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7(temperatuur / 1000);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6); //Seg DP laag zetten
-			break;
-
-		case 1:// 10
-			clear();
-			GPIOA->ODR |= (GPIO_ODR_OD8);  //Disp 1 hoog zetten
-			GPIOA->ODR &= ~(GPIO_ODR_OD15);//Disp 2 laag zetten
-			seg7((temperatuur / 100)%10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);  //Seg DP laag zetten
-			break;
-
-		case 2:// 01
-			clear();
-			GPIOA->ODR &= ~(GPIO_ODR_OD8);//Disp 1 laag zetten
-			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7((temperatuur % 100)/10);
-			GPIOA->ODR |= (GPIO_ODR_OD6);//Seg DP hoog zetten
-			break;
-
-		case 3:// 11
-			clear();
-			GPIOA->ODR |= (GPIO_ODR_OD8); //Disp 1 hoog zetten
-			GPIOA->ODR |= (GPIO_ODR_OD15);//Disp 2 hoog zetten
-			seg7((temperatuur % 100)%10);
-			GPIOA->ODR &= ~(GPIO_ODR_OD6);//Seg DP laag zetten
-			break;
-	}
 	mux++;
 	mseconden++;
 
@@ -110,6 +71,45 @@ int __io_putchar(int temperatuur){
 		    while(!(USART1->ISR & USART_ISR_TXE));
 		    USART1->TDR = temperatuur;
 		}
+void accelerometer_write(int data, int reg){
+	I2C1->CR2 &= ~(1 << 10);
+	I2C1->CR2 |= I2C_CR2_NACK_Msk;
+	I2C1->CR2 |= (1 << 13)|(2 << 16)|(0x53 << 1);
+	while((I2C1->ISR & (1 << 4)) == 0 && (I2C1->ISR & (1 << 1)) == 0);
+		if((I2C1->ISR & (1 << 4)) != 0){
+			return;
+	}
+	I2C1->TXDR = reg;
+
+	while(I2C1->ISR & (1 << 4) == 0 && I2C1->ISR & ( 1<<1 ) == 0);
+	if((I2C1->ISR & (1 << 4)) != 0){
+		return;
+	}
+	I2C1->TXDR = data;
+	while((I2C1->ISR & I2C_ISR_STOPF) == 0);
+}
+
+int accelerometer_read(int reg){
+	while((I2C1->ISR & I2C_ISR_BUSY));
+	I2C1->CR2 &= ~(1 << 10);
+	I2C1->CR2 &= ~I2C_CR2_AUTOEND_Msk;
+	I2C1->CR2 &= ~I2C_CR2_NBYTES_Msk;
+	I2C1->CR2 |= I2C_CR2_NACK_Msk;
+	I2C1->CR2 |= (1 << 13)|(1 << 16)|(0x53 << 1);
+	while(((I2C1->ISR & (1 << 4)) == 0) && ((I2C1->ISR & (1 << 1)) == 0));
+	if((I2C1->ISR & (1 << 4)) != 0){
+		return;
+	}
+	I2C1->TXDR = reg;
+	while((I2C1->ISR & (1 << 6)) == 0);
+
+	I2C1->CR2 |= I2C_CR2_AUTOEND_Msk;
+	I2C1->CR2 |= (1 << 10);
+	I2C1->CR2 |= (1 << 16)|(0x53 << 1);
+	I2C1->CR2 |= (1 << 13);
+	while(!(I2C1->ISR & I2C_ISR_RXNE));
+	return I2C1->RXDR;
+}
 
 int main(void) {
 
@@ -244,64 +244,20 @@ int main(void) {
 	I2C1->CR2 |= (I2C_CR2_AUTOEND | I2C_CR2_NACK);
 	I2C1->CR1 |= I2C_CR1_PE;
 
+	volatile int16_t array[3];
+	accelerometer_write(1 << 3,0x2D);
+	array[0] = accelerometer_read(0x2D);
+
 	while(1){
-		// Start de ADC en wacht tot de sequentie klaar is
-
-		// Kanalen instellen
-		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2);
-		ADC1->SMPR1 = ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2;
-		ADC1->SQR1 = ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2;
-		ADC1->CR |= ADC_CR_ADSTART;
-		input_potmeter = ADC1->DR;
-		while(!(ADC1->ISR & ADC_ISR_EOC));
-
-		// Lees de waarde in
-		input_NTC = ADC1->DR;
-		voltage = (input_NTC*3.0f)/4096.0f;
-		weerstand = (10000.0f*voltage)/(3.0f-voltage);
-		temperatuur = ((1.0f/((logf(weerstand/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f)*10;
-
-		// Kanalen instellen
-		ADC1->SMPR1 &= ~(ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2);//reset
-		ADC1->SMPR1 = ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2;
-		ADC1->SQR1 = ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2;
-		ADC1->CR |= ADC_CR_ADSTART;
-		while(!(ADC1->ISR & ADC_ISR_EOC));
-
-		TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
-		TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
-		TIM16->CCER |= TIM_CCER_CC1E;
-		TIM16->CCER &= ~TIM_CCER_CC1P;
-		TIM16->CR1 |= TIM_CR1_CEN;
-
-		if (input_potmeter > input_NTC ) {
-			TIM16->BDTR |= TIM_BDTR_MOE;
-			if (i<1000) {
-				TIM16->ARR = 24000;
-				TIM16->CCR1 = 12000;
-				delay(10);
-			}
-			else if (i<2000) {
-				TIM16->ARR = 12000;
-				TIM16->CCR1 = 6000;
-				delay(10);
-			}
-			else {
-				i=0;
-				delay(10);
-			}
-			i++;
+		for (int i = 0; i<3; i++){
+			array[i] = accelerometer_read(0x32 + i*2) << 8 + accelerometer_read(0x32 + i*2 + 1);
 		}
-		else {
-			TIM16->BDTR &= ~TIM_BDTR_MOE;
-			TIM16->CR1 &= ~TIM_CR1_CEN;
-		}
+		int xy = (sqrt(array[0]^2) + (array[1]^2));
+		int xyz = sqrt((xy^2) + (array[2]^2));
+		alpha = (acos(array[2]/(sqrt(array[0]*array[0] + array[1]*array[1] + array[2]*array[2]))))*(180/3.14);
+		printf("%2.2f",alpha);
+		printf("\n\r");
 
-		if (mseconden > 1000) {
-			mseconden = 0;
-			t=temperatuur;
-			printf("%.1f°C\n\r",t/10);
-		}
 		if (mux > 3) {
 			mux = 0;
 		}
