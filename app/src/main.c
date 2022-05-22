@@ -4,8 +4,8 @@
 
 
 int mux = 0;
-double alpha = 0;
-int beta = 0;
+double alpha = 0; //variabele alpha wordt weergegeven op UART
+int beta = 0;	  //variabele beta wordt weergegeven op display
 
 void delay(unsigned int n) {
 	volatile unsigned int delay = n;
@@ -292,6 +292,8 @@ int main(void) {
 		alpha = (acos(array[2]/(sqrt(array[0]*array[0] + array[1]*array[1] + array[2]*array[2]))))*(180/3.14);
 		printf("%2.2f",alpha);
 		printf("\n\r");
+
+		delay(1500);
 
 	}
 }
